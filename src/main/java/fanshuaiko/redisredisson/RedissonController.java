@@ -23,9 +23,10 @@ public class RedissonController{
     public void redissonTest() throws IOException {
         RedissonClient redissonClient = Redisson_Config.getRedisson();
         System.out.println("=======config设置成功======="+Redisson_Config.getRedisson().getConfig().toJSON());
+        //将testNumber存redis，初始值为200
         RBucket<Object> rBucket = redissonClient.getBucket("testNumber");
         rBucket.set(200);
-        System.out.println("----------"+ rBucket.get());
+        System.out.println("-----testNumber初始值为-----"+ rBucket.get());
         //获得重入锁
         RLock rLock = redissonClient.getLock("myTestKey");
 //        //获得公平锁
@@ -38,6 +39,7 @@ public class RedissonController{
             public void run() {
                 System.out.println("**********线程1开启***********"+Thread.currentThread().getName());
                 try {
+                    //等待时间，释放时间，前两个参数以秒为单位
                     rLock.tryLock(5,10,TimeUnit.SECONDS);
 //需要加锁的代码
                     System.out.println("1加锁是否成功："+rLock.isLocked());
