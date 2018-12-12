@@ -24,41 +24,44 @@ public class RedissonController{
         RedissonClient redissonClient = Redisson_Config.getRedisson();
         System.out.println("=======config设置成功======="+Redisson_Config.getRedisson().getConfig().toJSON());
         //将testNumber存redis，初始值为200
-        RBucket<Object> rBucket = redissonClient.getBucket("testNumber");
-        rBucket.set(200);
-        System.out.println("-----testNumber初始值为-----"+ rBucket.get());
+        RBucket<Object> rBucket1 = redissonClient.getBucket("testNumber");
+        rBucket1.set(200);
+        System.out.println("-----testNumber初始值为-----"+ rBucket1.get());
         //获得重入锁
         RLock rLock = redissonClient.getLock("myTestKey");
 //        //获得公平锁
 //        RLock fairLock = redissonClient.getFairLock("myTestKey");
 //        //获得读写锁
 //        RReadWriteLock readWriteLock = redissonClient.getReadWriteLock("myTestKey");
+        for (int i = 0; i < 200; i++) {
 
-        Thread t1 = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("**********线程1开启***********"+Thread.currentThread().getName());
-                try {
-                    //等待时间，释放时间，前两个参数以秒为单位
-                    rLock.tryLock(5,10,TimeUnit.SECONDS);
+         new Thread(()-> {
+             try {
+                 //等待时间，释放时间，前两个参数以秒为单位
+                 rLock.tryLock(5,10,TimeUnit.SECONDS);
+                 System.out.println(Thread.currentThread().getName()+"**********线程开启***********"+Thread.currentThread().getName());
+
+
 //需要加锁的代码
-                    System.out.println("1加锁是否成功："+rLock.isLocked());
-                    RBucket<Integer> rBucket = redissonClient.getBucket("testNumber");
-                    for (int i = 0; i < 20; i++) {
-                        if(rBucket.get()>0){
-                            rBucket.set(rBucket.get()-10);
-                            System.out.println("线程1testNumber的值为："+rBucket.get());
-                        }
-                    }
-                    System.out.println("**********1线程关闭***********"+Thread.currentThread().getName());
+             System.out.println(Thread.currentThread().getName()+"加锁是否成功："+rLock.isLocked());
+             RBucket<Integer> rBucket = redissonClient.getBucket("testNumber");
+//                    for (int j = 0; j < 20; j++) {
+
+                 rBucket.set(rBucket.get()-1);
+                 System.out.println(Thread.currentThread().getName()+"线程testNumber的值为："+rBucket.get());
+
+//                    }
+             System.out.println(Thread.currentThread().getName()+"**********线程关闭***********"+Thread.currentThread().getName());
 //解锁
                     rLock.unlock();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-        t1.run();
+             } catch (InterruptedException e) {
+                 e.printStackTrace();
+             }
+         }).start();
+
+
+        }
+
         }
 
 
