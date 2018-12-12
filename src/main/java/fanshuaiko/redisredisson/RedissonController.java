@@ -3,6 +3,7 @@ package fanshuaiko.redisredisson;
 
 import org.redisson.api.RBucket;
 import org.redisson.api.RLock;
+import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Controller;
 import java.io.IOException;
@@ -25,8 +26,12 @@ public class RedissonController{
         RBucket<Object> rBucket = redissonClient.getBucket("testNumber");
         rBucket.set(200);
         System.out.println("----------"+ rBucket.get());
-        //重入锁
-        RLock rLock = redissonClient.getLock("myKey");
+        //获得重入锁
+        RLock rLock = redissonClient.getLock("myTestKey");
+//        //获得公平锁
+//        RLock fairLock = redissonClient.getFairLock("myTestKey");
+//        //获得读写锁
+//        RReadWriteLock readWriteLock = redissonClient.getReadWriteLock("myTestKey");
 
         Thread t1 = new Thread(new Runnable() {
             @Override
